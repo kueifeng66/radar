@@ -1,6 +1,6 @@
         let currentSchedule = {};
-       
-        let people = ['林森發', '劉錦郎', '余金原', '張哲維','陳志偉'];
+        // let people = ['林森發', '劉錦郎', '余金原', '張哲維','陳志偉'];
+		let people = ['林森發', '劉錦郎', '余金原','陳志偉'];
         let unavailableDays = {};
         let preassigned = {};
         let selectedDayForPreassign = null;
@@ -11,7 +11,7 @@ const personColors = {
     '林森發': '#F96167',
     '劉錦郎': '#990011',
     '余金原': '#00246B',
-	'張哲維': '#8AAAE5',
+	// '張哲維': '#8AAAE5',
 	'陳志偉': '#F9E795',
     
 };
