@@ -1,5 +1,6 @@
         let currentSchedule = {};
-        let people = ['林森發', '黃煜森', '劉錦郎', '張哲維', '余金原'];
+       
+        let people = ['林森發', '劉錦郎', '余金原', '張哲維','陳志偉'];
         let unavailableDays = {};
         let preassigned = {};
         let selectedDayForPreassign = null;
