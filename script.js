@@ -113,14 +113,38 @@ const personColors = {
                 const selectAllBtn = document.createElement('button');
                 selectAllBtn.textContent = 'Select All Days';
                 selectAllBtn.style.marginBottom = '5px';
+                
+
                 selectAllBtn.addEventListener('click', () => {
+                const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+
+                // Check whether all checkboxes are currently checked
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+
+                if (allChecked) {
+                // All are checked -> uncheck all
                 unavailableDays[person] = [];
-                container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                cb.checked = true;
-                const day = parseInt(cb.value);
-                unavailableDays[person].push(day);
+
+                checkboxes.forEach(cb => {
+                    cb.checked = false;
                 });
+
+                selectAllBtn.textContent = 'Select All Days';
+
+                } else {
+                    // Not all are checked -> check all
+                    unavailableDays[person] = [];
+
+                    checkboxes.forEach(cb => {
+                    cb.checked = true;
+                    unavailableDays[person].push(parseInt(cb.value));
                 });
+
+                selectAllBtn.textContent = 'Unselect All Days';
+                }
+                });
+
+
                 container.appendChild(selectAllBtn);
                 container.appendChild(document.createElement('br')); 
                
