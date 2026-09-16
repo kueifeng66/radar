@@ -314,7 +314,7 @@ function tryGenerateSchedule(maxHourDiffThreshold, maxRestDiffThreshold) {
         } else if (!(isTodayHoliday || isWeekend) && isTomorrowHoliday) {
             workHours = 16;
             isHardDay = true;
-            isRestDay = true;
+            isRestDay = false;
         } else {
             // fallback to normal logic
             if (dayOfWeek === 6) {
