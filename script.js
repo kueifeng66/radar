@@ -1,17 +1,18 @@
-        let currentSchedule = {};
-        // let people = ['林森發', '劉錦郎', '余金原', '張哲維','陳志偉'];
-		let people = ['林森發', '劉錦郎', '余金原','陳志偉'];
+        let currentSchedule = {};       
+        const allPeople = ['林森發', '劉錦郎', '余金原', '張哲維', '陳志偉'];
+		
+        let disabledPeople = new Set();
         let unavailableDays = {};
         let preassigned = {};
         let selectedDayForPreassign = null;
         let holidays = [];
-
+        let people = [...allPeople];
 
 const personColors = {
     '林森發': '#F96167',
     '劉錦郎': '#990011',
     '余金原': '#00246B',
-	// '張哲維': '#8AAAE5',
+	'張哲維': '#8AAAE5',
 	'陳志偉': '#F9E795',
     
 };
@@ -19,13 +20,16 @@ const personColors = {
 
 
         
-        function init() {
-            setupDateSelectors();
-            setupPeopleList();
-            generateCalendar();
+function init() {
+    setupDateSelectors();
+    setupPeopleList();
+    generateCalendar();
 			//shuffleDeck();
-        }
+}
 
+function updateActivePeople() {
+    people = allPeople.filter(p => !disabledPeople.has(p));
+}
 
 		// function shuffleDeck() {
 
@@ -72,106 +76,145 @@ const personColors = {
 
         
         function setupPeopleList() {
-            const peopleList = document.getElementById('peopleList');
-            people.forEach((person, index) => {
-                unavailableDays[person] = [];
-                
-                const personCard = document.createElement('div');
-                personCard.className = 'person-card';
-                
-                const personHeader = document.createElement('div');
-                personHeader.className = 'person-header';
-                personHeader.innerHTML = `<span class="person-name">${person}</span>`;
-                
-                const unavailableSection = document.createElement('div');
-                unavailableSection.innerHTML = '<p>不可排班日期:</p>';
-                
-                const daysContainer = document.createElement('div');
-                daysContainer.className = 'unavailable-days';
-                daysContainer.id = `days-${index}`;
-                
-                unavailableSection.appendChild(daysContainer);
-                personCard.appendChild(personHeader);
-                personCard.appendChild(unavailableSection);
-                peopleList.appendChild(personCard);
-            });
-            
-            updateUnavailableDays();
+    const peopleList = document.getElementById('peopleList');
+    peopleList.innerHTML = '';
+    
+    // Update active pool first
+    updateActivePeople();
+
+    allPeople.forEach((person, index) => {
+        if (!unavailableDays[person]) {
+            unavailableDays[person] = [];
+        }
+        
+        const isEnabled = !disabledPeople.has(person);
+        
+        const personCard = document.createElement('div');
+        personCard.className = `person-card ${!isEnabled ? 'person-card-disabled' : ''}`;
+        if (!isEnabled) {
+            personCard.style.opacity = '0.5';
+        }
+        
+        const personHeader = document.createElement('div');
+        personHeader.className = 'person-header';
+        personHeader.style.display = 'flex';
+        personHeader.style.justifyContent = 'space-between';
+        personHeader.style.alignItems = 'center';
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'person-name';
+        nameSpan.textContent = person;
+        if (!isEnabled) {
+            nameSpan.style.textDecoration = 'line-through';
         }
 
+        // Toggle Button
+        const toggleBtn = document.createElement('button');
+        toggleBtn.textContent = isEnabled ? '停用 (Disable)' : '啟用 (Enable)';
+        toggleBtn.style.marginLeft = '10px';
+        toggleBtn.style.cursor = 'pointer';
+
+        toggleBtn.addEventListener('click', () => {
+            if (disabledPeople.has(person)) {
+                disabledPeople.delete(person);
+            } else {
+                disabledPeople.add(person);
+            }
+            // Rebuild UI and update global state
+            setupPeopleList();
+            generateCalendar();
+        });
         
+        personHeader.appendChild(nameSpan);
+        personHeader.appendChild(toggleBtn);
+        
+        const unavailableSection = document.createElement('div');
+        unavailableSection.innerHTML = '<p>不可排班日期:</p>';
+        
+        const daysContainer = document.createElement('div');
+        daysContainer.className = 'unavailable-days';
+        daysContainer.id = `days-${index}`;
+
+        // Disable date inputs if the person is disabled
+        if (!isEnabled) {
+            daysContainer.style.pointerEvents = 'none';
+        }
+        
+        unavailableSection.appendChild(daysContainer);
+        personCard.appendChild(personHeader);
+        personCard.appendChild(unavailableSection);
+        peopleList.appendChild(personCard);
+    });
+    
+    updateUnavailableDays();
+}
+
         function updateUnavailableDays() {
-            const year = parseInt(document.getElementById('yearSelect').value);
-            const month = parseInt(document.getElementById('monthSelect').value);
-            const daysInMonth = new Date(year, month, 0).getDate();
-            
-            people.forEach((person, personIndex) => {
-                const container = document.getElementById(`days-${personIndex}`);
-                container.innerHTML = '';
+    const year = parseInt(document.getElementById('yearSelect').value);
+    const month = parseInt(document.getElementById('monthSelect').value);
+    const daysInMonth = new Date(year, month, 0).getDate();
+    
+    allPeople.forEach((person, personIndex) => {
+        const container = document.getElementById(`days-${personIndex}`);
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        // Skip building checkbox elements if person is disabled
+        if (disabledPeople.has(person)) return;
 
+        const selectAllBtn = document.createElement('button');
+        selectAllBtn.textContent = 'Select All Days';
+        selectAllBtn.style.marginBottom = '5px';
+        
+        selectAllBtn.addEventListener('click', () => {
+            const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
 
-                const selectAllBtn = document.createElement('button');
-                selectAllBtn.textContent = 'Select All Days';
-                selectAllBtn.style.marginBottom = '5px';
-                
-
-                selectAllBtn.addEventListener('click', () => {
-                const checkboxes = container.querySelectorAll('input[type="checkbox"]');
-
-                // Check whether all checkboxes are currently checked
-                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-
-                if (allChecked) {
-                // All are checked -> uncheck all
+            if (allChecked) {
                 unavailableDays[person] = [];
-
-                checkboxes.forEach(cb => {
-                    cb.checked = false;
-                });
-
+                checkboxes.forEach(cb => { cb.checked = false; });
                 selectAllBtn.textContent = 'Select All Days';
-
-                } else {
-                    // Not all are checked -> check all
-                    unavailableDays[person] = [];
-
-                    checkboxes.forEach(cb => {
+            } else {
+                unavailableDays[person] = [];
+                checkboxes.forEach(cb => {
                     cb.checked = true;
                     unavailableDays[person].push(parseInt(cb.value));
                 });
-
                 selectAllBtn.textContent = 'Unselect All Days';
-                }
-                });
+            }
+        });
 
+        container.appendChild(selectAllBtn);
+        container.appendChild(document.createElement('br')); 
+        
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayCheckbox = document.createElement('label');
+            dayCheckbox.className = 'day-checkbox';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = day;
+            if (unavailableDays[person]?.includes(day)) {
+                checkbox.checked = true;
+            }
 
-                container.appendChild(selectAllBtn);
-                container.appendChild(document.createElement('br')); 
-               
-                
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const dayCheckbox = document.createElement('label');
-                    dayCheckbox.className = 'day-checkbox';
-                    
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.value = day;
-                    checkbox.addEventListener('change', (e) => {
-                        if (e.target.checked) {
-                            if (!unavailableDays[person].includes(day)) {
-                                unavailableDays[person].push(day);
-                            }
-                        } else {
-                            unavailableDays[person] = unavailableDays[person].filter(d => d !== day);
-                        }
-                    });
-                    
-                    dayCheckbox.appendChild(checkbox);
-                    dayCheckbox.appendChild(document.createTextNode(day + '日'));
-                    container.appendChild(dayCheckbox);
+            checkbox.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    if (!unavailableDays[person].includes(day)) {
+                        unavailableDays[person].push(day);
+                    }
+                } else {
+                    unavailableDays[person] = unavailableDays[person].filter(d => d !== day);
                 }
             });
+            
+            dayCheckbox.appendChild(checkbox);
+            dayCheckbox.appendChild(document.createTextNode(day + '日'));
+            container.appendChild(dayCheckbox);
         }
+    });
+}
 
         function Zellercongruence(day, month, year)
         {
