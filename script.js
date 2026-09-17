@@ -603,7 +603,7 @@ function calculateScheduleStats(schedule) {
         } else if (!(isTodayHoliday || isWeekend) && isTomorrowHoliday) {
             workHours = 16;
             isHardDay = true;
-            isRestDay = true;
+            isRestDay = false;
         } else {
             if (dayOfWeek === 6) {
                 workHours = 24;
