@@ -1032,9 +1032,8 @@ function updateCalendarDisplay() {
 
     person1Select.innerHTML = '<option value="">-- 請選擇 --</option>';
     person2Select.innerHTML = '<option value="">-- 請選擇 --</option>';
-    if (person3Select) {
-        person3Select.innerHTML = '<option value="">-- 請選擇 --</option>';
-    }
+    person3Select.innerHTML = '<option value="">-- 請選擇 --</option>';
+
 
     allPeople.forEach(name => {
         // Option 1 (S)
