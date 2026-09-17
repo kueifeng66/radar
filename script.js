@@ -75,7 +75,7 @@ function updateActivePeople() {
         }
 
         
-        function setupPeopleList() {
+function setupPeopleList() {
     const peopleList = document.getElementById('peopleList');
     peopleList.innerHTML = '';
     
@@ -149,7 +149,7 @@ function updateActivePeople() {
     updateUnavailableDays();
 }
 
-        function updateUnavailableDays() {
+function updateUnavailableDays() {
     const year = parseInt(document.getElementById('yearSelect').value);
     const month = parseInt(document.getElementById('monthSelect').value);
     const daysInMonth = new Date(year, month, 0).getDate();
@@ -438,7 +438,15 @@ function tryGenerateSchedule(maxHourDiffThreshold, maxRestDiffThreshold) {
                 personStats[person].hardDays++;
             }
         });
+        
 
+        // Check if ONLY person3Select (Role 'R') is selected for this day
+        const isOnlyPerson3Selected = preListRaw.length > 0 && preListRaw.every(p => typeof p === 'object' && p.role === 'R');
+
+        // Skip auto-assignment and move directly to the next day
+        if (isOnlyPerson3Selected) {
+            continue;
+        }
 
         const alreadyAssigned = new Set(schedule[day]);
         const alreadyAssignedYesterday = new Set(schedule[day - 1] || []);
@@ -1018,37 +1026,52 @@ function updateCalendarDisplay() {
         }
 
     function populatePersonSelects(preselected) {
-        const person1Select = document.getElementById('person1Select');
-        const person2Select = document.getElementById('person2Select');
+    const person1Select = document.getElementById('person1Select');
+    const person2Select = document.getElementById('person2Select');
+    const person3Select = document.getElementById('person3Select');
 
-        person1Select.innerHTML = '<option value="">-- 請選擇 --</option>';
-        person2Select.innerHTML = '<option value="">-- 請選擇 --</option>';
-
-        people.forEach(name => {
-            const opt1 = document.createElement('option');
-            opt1.value = name;
-            opt1.textContent = `S: ${name}`;
-            if (preselected[0] === name) opt1.selected = true;
-            person1Select.appendChild(opt1);
-
-            const opt2 = document.createElement('option');
-            opt2.value = name;
-            opt2.textContent = `M: ${name}`;
-            if (preselected[1] === name) opt2.selected = true;
-            person2Select.appendChild(opt2);
-        });
+    person1Select.innerHTML = '<option value="">-- 請選擇 --</option>';
+    person2Select.innerHTML = '<option value="">-- 請選擇 --</option>';
+    if (person3Select) {
+        person3Select.innerHTML = '<option value="">-- 請選擇 --</option>';
     }
+
+    allPeople.forEach(name => {
+        // Option 1 (S)
+        const opt1 = document.createElement('option');
+        opt1.value = name;
+        opt1.textContent = `S: ${name}`;
+        if (preselected[0] === name || preselected[0]?.name === name) opt1.selected = true;
+        person1Select.appendChild(opt1);
+
+        // Option 2 (M)
+        const opt2 = document.createElement('option');
+        opt2.value = name;
+        opt2.textContent = `M: ${name}`;
+        if (preselected[1] === name || preselected[1]?.name === name) opt2.selected = true;
+        person2Select.appendChild(opt2);
+
+        // Option 3 (R)
+        if (person3Select) {
+            const opt3 = document.createElement('option');
+            opt3.value = name;
+            opt3.textContent = `R: ${name}`;
+            if (preselected[2] === name || preselected[2]?.name === name) opt3.selected = true;
+            person3Select.appendChild(opt3);
+        }
+    });
+}
 
 function savePreassignment() {
     const val1 = document.getElementById('person1Select').value;
     const val2 = document.getElementById('person2Select').value;
+    const val3 = document.getElementById('person3Select')?.value;
 
     const chosen = [];
 
-   
     if (val1) chosen.push({ name: val1, role: 'S' });
     if (val2) chosen.push({ name: val2, role: 'M' });
-
+    if (val3) chosen.push({ name: val3, role: 'R' });
 
     const names = chosen.map(c => c.name);
     if (new Set(names).size !== names.length) {
